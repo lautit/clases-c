@@ -1,71 +1,130 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-char** cargarHabitaciones(void);
-const char* cargarCamas(int, char*);
+char ***asignarMemoriaCasa(const unsigned int cuartos, const unsigned int *camas);
+void cargarCuartos (char *** casa, const unsigned int cuartos, const unsigned int *camas);
+void cargarCamas (char ** cuarto, const unsigned int nroCuarto, const unsigned int cantCamas);
+void imprimirCasa (char **casa);
 
 int main() {
 
-    char** casa;
+    /***
+     * Matriz esencial para el ejercicio: 
+     *
+     *  casa -----┐
+     *            |
+     *            V
+     *          ┌---┐      [0][0]
+     *          |   |      ┌---┬---┬---┬---┐
+     *      [0] | ●------> |'S'|'S'|'S'|'ø'|
+     *          |   |      └---┴---┴---┴---┘
+     *          ├---┤      [1][0]
+     *          |   |      ┌---┬---┐
+     *      [1] | ●------> |'D'|'ø'|
+     *          |   |      └---┴---┘
+     *          ├---┤      [2][0]
+     *          |   |      ┌---┬---┬---┐
+     *      [2] | ●------> |'D'|'S'|'ø'|
+     *          |   |      └---┴---┴---┘
+     *          ├---┤
+     *          |   |
+     *        ═════════
+     *          |   |
+     *          ├---┤                            ║
+     *          |   |      ┌---┬---┬---┬---┬---┬-║-┬---┐
+     *  casa[x] | ●------> |   |   |   |   |   | ║ | ● | casa[x][y]
+     *          |   |      └---┴---┴---┴---┴---┴-║-┴---┘
+     *          └---┘                            ║
+     *
+     */
+    char** casa = NULL;
 
-    int hab, cam;
+    //const unsigned int cuartos = 3u; //, nroCuarto;
+    //const unsigned int camas[] = { 1u, 2u, 3u }; //NULL;
+    unsigned int cuartos, nroCuarto;
+    unsigned int *camas = NULL;
 
-    casa = cargarHabitaciones();
+    printf("Ingrese cantidad de habitaciones: ");
+    scanf("%u", &cuartos);
+    fflush(NULL);
 
-    for (hab = 0; hab < 100; hab++) {
-        printf("La Hab. Nº%d tiene las camas ", hab+1);
-        for (cam = 0; cam < 100; cam++) {
-            printf("%c ", casa[hab][cam]);
-        }
-        printf("\n");
+    camas = (unsigned int *) calloc(cuartos, sizeof(unsigned int));
+
+    for (nroCuarto = 0; nroCuarto < cuartos; nroCuarto++) {
+        printf("Ingrese cantidad de camas de la Hab. Nº%u: ", nroCuarto + 1);
+        scanf("%u", &camas[nroCuarto]);
+        fflush(NULL);
     }
+
+    casa = *asignarMemoriaCasa(cuartos, camas);
+
+    cargarCuartos(&casa, cuartos, camas);
+
+    imprimirCasa(casa);
 
     return 0;
 }
 
-char** cargarHabitaciones(void) {
-    char* habitaciones[5] = { "a","a","a","a","a" };
-    int cantidadHabitaciones = 0, i;
-    char aux[5];
+void cargarCuartos (char *** casa, const unsigned int cuartos, const unsigned int *camas) {
+    unsigned int nroCuarto;
+    char *cuarto = NULL;
 
-    printf("Ingrese cantidad de habitaciones: ");
-    scanf("%d", &cantidadHabitaciones);
+    for (nroCuarto = 0; nroCuarto < cuartos; nroCuarto++) {
+        cuarto = (*casa)[nroCuarto];
 
-    for (i = 0; i < cantidadHabitaciones; i++) {
-
-        printf("cargo camas\n");
-        cargarCamas(i+1, &aux);
-        printf("cargue camas\n");
-
-        printf("habitaciones[%d] = %s\n", i, habitaciones[i]);
-        printf("aux = %s\n\n", aux);
-
+        printf(">> Cargando Hab. Nº%u:\n", nroCuarto + 1);
+        fflush(NULL);
+        cargarCamas(&cuarto, (const unsigned int)nroCuarto, camas[nroCuarto]);
     }
 
-    return habitaciones;
+    return;
 }
 
-const char* cargarCamas(int nroHabitacion, char* habitacion) {
-    char camas[5];
-    int cantidadCamas = 0, i;
+void cargarCamas(char ** cuarto, const unsigned int nroCuarto, const unsigned int cantCamas) {
+    unsigned int nroCama;
     char tipoCama;
+    //void *tipoCama[] = {"D", "DS", "SSS"};
 
-    printf("Ingrese cantidad de camas de la Hab. Nº%d: ", nroHabitacion);
-    scanf("%d", &cantidadCamas);
+    for (nroCama = 0; nroCama < cantCamas; nroCama++) {
 
-    for (i = 0; i < cantidadCamas; i++) {
-
-        printf("La cama %d es simple (S) o doble (D)? ", i+1);
+        printf("La cama %u de %u, ¿es simple (S) o doble (D)? ", nroCama + 1, cantCamas);
         scanf(" %c", &tipoCama);
+        fflush(NULL);
 
         if (!(tipoCama == 'S' || tipoCama == 'D' || tipoCama == 's' || tipoCama == 'd')) {
-            printf("sos un nabo carga bien");
+            printf("\nIngrese sólo S o D: ");
+            scanf(" %c", &tipoCama);
+            fflush(NULL);
         } else {
-            camas[i] = tipoCama;
+            cuarto[0][nroCama] = tipoCama;
         }
 
     }
 
-    habitacion = camas;
+    printf("\n\n");
 
-    return &camas;
+    return;
+}
+
+char*** asignarMemoriaCasa(const unsigned int cuartos, const unsigned int *camas) {
+    unsigned int i;
+    char **auxCasa = NULL;
+
+    printf("\n\n");
+
+    printf("> Alocando %lu bytes para %u punteros que representan habitaciones\n", sizeof(char *) * cuartos, cuartos);
+    auxCasa = (char **) calloc(cuartos, sizeof(char *));
+
+    for (i = 0; i < cuartos; i++) {
+        printf("> Alocando %lu bytes para %u caracteres que representan las camas de la habitación %u\n", sizeof(char) * camas[i], camas[i], i);
+        auxCasa[i] = (char*) calloc(camas[i], sizeof(char));
+    }
+
+    printf("\n\n");
+
+    return &auxCasa;
+}
+
+void imprimirCasa(char **casa) {
+    printf("tu mama en tanga");
 }
