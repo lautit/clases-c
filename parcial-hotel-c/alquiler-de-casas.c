@@ -126,5 +126,5 @@ char*** asignarMemoriaCasa(const unsigned int cuartos, const unsigned int *camas
 }
 
 void imprimirCasa(char **casa) {
-    printf("tu mama en tanga");
+    printf("¿Que iría acá?");
 }
